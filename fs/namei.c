@@ -39,7 +39,9 @@
 #include <linux/bitops.h>
 #include <linux/init_task.h>
 #include <linux/uaccess.h>
+#if defined(CONFIG_SUS_FS)
 #include <linux/suspicious.h>
+#endif
 
 #include "internal.h"
 #include "mount.h"
@@ -3718,9 +3720,11 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	int flags = op->lookup_flags;
 	struct file *filp;
 
+#if defined(CONFIG_SUS_FS)
 	if (suspicious_path(pathname)) {
 		return ERR_PTR(-ENOENT);
 	}
+#endif
 
 	set_nameidata(&nd, dfd, pathname);
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
@@ -3914,6 +3918,8 @@ SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
 	struct path path;
 	int error;
 	unsigned int lookup_flags = 0;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -3924,6 +3930,7 @@ SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
 	if (status) {
 		return -ENOENT;
 	}
+#endif
 
 	error = may_mknod(mode);
 	if (error)
@@ -4004,6 +4011,8 @@ SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
 	struct path path;
 	int error;
 	unsigned int lookup_flags = LOOKUP_DIRECTORY;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -4014,6 +4023,8 @@ SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
 	if (status) {
 		return -ENOENT;
 	}
+#endif
+
 retry:
 	dentry = user_path_create(dfd, pathname, &path, lookup_flags);
 	if (IS_ERR(dentry))
@@ -4091,6 +4102,8 @@ static long do_rmdir(int dfd, const char __user *pathname)
 	struct qstr last;
 	int type;
 	unsigned int lookup_flags = 0;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -4101,6 +4114,8 @@ static long do_rmdir(int dfd, const char __user *pathname)
 	if (status) {
 		return -ENOENT;
 	}
+#endif
+
 retry:
 	name = filename_parentat(dfd, getname(pathname), lookup_flags,
 				&path, &last, &type);
@@ -4238,9 +4253,12 @@ static long do_unlinkat(int dfd, const char __user *pathname)
 	struct inode *delegated_inode = NULL;
 	unsigned int lookup_flags = 0;
 
+#if defined(CONFIG_SUS_FS)
 	if (suspicious_path(name)) {
 		return -ENOENT;
 	}
+#endif
+
 retry:
 	name = filename_parentat(dfd, getname(pathname), lookup_flags,
 				&path, &last, &type);
@@ -4354,6 +4372,8 @@ SYSCALL_DEFINE3(symlinkat, const char __user *, oldname,
 	struct dentry *dentry;
 	struct path path;
 	unsigned int lookup_flags = 0;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -4372,6 +4392,7 @@ SYSCALL_DEFINE3(symlinkat, const char __user *, oldname,
 	if (status) {
 		return -ENOENT;
 	}
+#endif
 
 	from = getname(oldname);
 	if (IS_ERR(from))
@@ -4503,6 +4524,8 @@ SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname,
 	struct inode *delegated_inode = NULL;
 	int how = 0;
 	int error;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -4521,6 +4544,7 @@ SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname,
 	if (status) {
 		return -ENOENT;
 	}
+#endif
 
 	if ((flags & ~(AT_SYMLINK_FOLLOW | AT_EMPTY_PATH)) != 0)
 		return -EINVAL;
@@ -4781,6 +4805,8 @@ SYSCALL_DEFINE5(renameat2, int, olddfd, const char __user *, oldname,
 	unsigned int lookup_flags = 0, target_flags = LOOKUP_RENAME_TARGET;
 	bool should_retry = false;
 	int error;
+
+#if defined(CONFIG_SUS_FS)
 	struct filename* fname;
 	int status;
 
@@ -4799,6 +4825,7 @@ SYSCALL_DEFINE5(renameat2, int, olddfd, const char __user *, oldname,
 	if (status) {
 		return -ENOENT;
 	}
+#endif
 
 	if (flags & ~(RENAME_NOREPLACE | RENAME_EXCHANGE | RENAME_WHITEOUT))
 		return -EINVAL;
@@ -4821,10 +4848,12 @@ retry:
 		goto exit;
 	}
 
+#if defined(CONFIG_SUS_FS)
 	if (suspicious_path(from)) {
 		error = -ENOENT;
 		goto exit;
 	}
+#endif
 
 	to = filename_parentat(newdfd, getname(newname), lookup_flags,
 				&new_path, &new_last, &new_type);
@@ -4833,10 +4862,12 @@ retry:
 		goto exit1;
 	}
 
+#if defined(CONFIG_SUS_FS)
 	if (suspicious_path(to)) {
 		error = -ENOENT;
 		goto exit;
 	}
+#endif
 
 	error = -EXDEV;
 	if (old_path.mnt != new_path.mnt)
