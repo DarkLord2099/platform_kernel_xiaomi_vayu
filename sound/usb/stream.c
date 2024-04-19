@@ -304,6 +304,7 @@ static struct snd_pcm_chmap_elem *convert_chmap(int channels, unsigned int bits,
 			chmap->map[1] = SNDRV_CHMAP_FR;
 			break;
 		}
+
 	} else {
 		int c = 0;
 		const unsigned int *maps =
