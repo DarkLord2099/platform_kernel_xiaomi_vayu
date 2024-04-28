@@ -64,7 +64,7 @@ completion()
     COMPILED_DTBO=arch/arm64/boot/dtbo.img
     if [[ -f ${COMPILED_IMAGE} && ${COMPILED_DTBO} ]]; then
 
-        git clone -q https://github.com/GXC2356/AnyKernel3.git -b master $anykernel
+        git clone -q https://github.com/DarkLord2099/AnyKernel3.git -b master $anykernel
 
         mv -f $ZIMAGE ${COMPILED_DTBO} $anykernel
 
